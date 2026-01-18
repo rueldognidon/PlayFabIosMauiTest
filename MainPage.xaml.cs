@@ -1,4 +1,6 @@
-﻿namespace PlayFabIosMauiTest;
+﻿using PlayFab;
+
+namespace PlayFabIosMauiTest;
 
 public partial class MainPage : ContentPage
 {
@@ -7,17 +9,32 @@ public partial class MainPage : ContentPage
 	public MainPage()
 	{
 		InitializeComponent();
+		PlayFab.PlayFabSettings.staticSettings.TitleId = "[TitleID]"; // Please change this to your own title ID from PlayFab Game Manager
 	}
 
-	private void OnCounterClicked(object? sender, EventArgs e)
+	private async void LoginBtn_Clicked(object sender, EventArgs e)
 	{
-		count++;
+		try
+		{
+				var result = await PlayFabClientAPI.LoginWithCustomIDAsync(new PlayFab.ClientModels.LoginWithCustomIDRequest
+				{
+					CustomId = "GettingStartedGuide",
+					CreateAccount = true
+				});
 
-		if (count == 1)
-			CounterBtn.Text = $"Clicked {count} time";
-		else
-			CounterBtn.Text = $"Clicked {count} times";
+				if (result.Error != null)
+				{
+					await DisplayAlertAsync("Error", result.Error.GenerateErrorReport(), "OK");
+				}
+				else
+				{
+					await DisplayAlertAsync("Success", "Logged in as " + result.Result.PlayFabId, "OK");
+				}
+		}
 
-		SemanticScreenReader.Announce(CounterBtn.Text);
+		catch (Exception ex)
+		{
+			await DisplayAlertAsync("Error", ex.Message, "OK");
+		}
 	}
 }
